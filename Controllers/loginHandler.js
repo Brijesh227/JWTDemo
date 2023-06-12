@@ -1,5 +1,6 @@
 const json = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const User = require('../model/user');
 require('dotenv').config();
 const { errorGenerator } = require('../Common/utility/errorGenerator');
 
@@ -8,15 +9,14 @@ exports.loginHandler = async function (req, res) {
     if (!userName || !password) {
         return errorGenerator(res, 400, "username or password are not provided.")
     }
-    const findUser = { userName, password }; // db call
+    const findUser = await User.findOne({
+        username: userName,
+    }).exec();
     if (!findUser) {
         return errorGenerator(res, 401, "username or password is wrong.")
     } else {
         try {
-            const isPasswordMatched = true || await bcrypt.compare(password, findUser.password);
-            console.log("lol cookie",req.cookies);
-            console.log("lol cookie",req.headers.cookie);
-            console.log("lol cookie",req.cookie); 
+            const isPasswordMatched = await bcrypt.compare(password, findUser.password);
             if (isPasswordMatched) {
                 const accessToken = await json.sign({ userName }, process.env.ACCESS_PRIVATE_KEY, {
                     expiresIn: '5000'
@@ -28,7 +28,7 @@ exports.loginHandler = async function (req, res) {
                     httpOnly: true,
                     maxAge: 30 * 60 * 1000
                 });
-                res.json({accessToken})
+                res.json({accessToken});
             } else {
                 return errorGenerator(res, 401, "password is wrong.")
             }
