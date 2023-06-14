@@ -1,8 +1,8 @@
 const json = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const User = require('../model/user');
+const User = require('../model/userSchema');
 require('dotenv').config();
-const { errorGenerator } = require('../Common/utility/errorGenerator');
+const { errorGenerator } = require('../common/utility/errorGenerator');
 
 exports.loginHandler = async function (req, res) {
     const { userName, password } = req.body;
@@ -28,7 +28,7 @@ exports.loginHandler = async function (req, res) {
                     httpOnly: true,
                     maxAge: 30 * 60 * 1000
                 });
-                res.json({accessToken});
+                res.json({ accessToken });
             } else {
                 return errorGenerator(res, 401, "password is wrong.")
             }
