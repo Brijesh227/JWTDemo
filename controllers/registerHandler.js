@@ -19,7 +19,7 @@ exports.registerHandler = async function (req, res) {
             "password": hashedPassword
         })
         console.log('newuser', newUser);
-        res.status(200).send("user created Successfully");
+        res.status(200).send(`${newUser.username} created successfully`);
     } catch (err) {
         errorGenerator(res, 500);
     }

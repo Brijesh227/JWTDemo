@@ -35,10 +35,10 @@ async function createFoodItem(req, res) {
 async function updateFoodItem(req, res) {
     try {
         const { name, category, description, price } = req.body;
-        if (!name || !category || !price || !description) {
+        if (!name && !category && !price && !description) {
             return errorGenerator(res, 400);
         }
-        
+        const foodItem = await Food.
         res.send(200).json(foodItem);
     } catch (err) {
         console.log(err);
