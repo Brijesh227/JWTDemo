@@ -1,22 +1,21 @@
-const json = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const User = require('../model/userSchema');
 require('dotenv').config();
 const { errorGenerator } = require('../common/utility/errorGenerator');
+const { generateToken } = require("../common/controllerFunction");
 
-const updaterefreshToken = async (username,refreshToken) => {
+const updateUser = async (username,refreshTokenArray) => {
     try {
         await User.updateOne(
             {username},
             {
                 $set: {
-                    $refer
+                    $refreshToken: refreshTokenArray
                 }
             })
     } catch (err) {
         throw new Error(err);
     }
-    
 }
 
 exports.loginHandler = async function (req, res) {
@@ -24,32 +23,49 @@ exports.loginHandler = async function (req, res) {
     if (!userName || !password) {
         return errorGenerator(res, 400, "username or password are not provided.")
     }
-    const findUser = await User.findOne({
-        username: userName,
-    }).exec();
-    if (!findUser) {
+    const foundUser = await User.findOne({ username: userName }).exec();
+    if (!foundUser) {
         return errorGenerator(res, 401, "can't find user.")
-    } else {
-        try {
-            const isPasswordMatched = await bcrypt.compare(password, findUser.password);
-            if (isPasswordMatched) {
-                const accessToken = await json.sign({ userName }, process.env.ACCESS_PRIVATE_KEY, {
-                    expiresIn: '1h'
+    }
+    try {
+        const isPasswordMatched = await bcrypt.compare(password, foundUser.password);
+        if (isPasswordMatched) {
+            let cookieRefreshToken = req?.cookies?.refreshToken;
+
+            let refreshTokenArray = cookieRefreshToken ? foundUser.refreshToken.filter(rt => rt !== cookieRefreshToken) : foundUser.refreshToken;
+
+            if(cookieRefreshToken) {
+                jwt.verify(cookieRefreshToken, process.env.REFRESH_PRIVATE_KEY, async (err, decoded) => {
+                    if(err || decoded.username !== foundUser.username) {
+                        foundUser.refreshTokenArray = [];
+                        await foundUser.save();
+                        return errorGenerator(res,403);
+                    }
                 });
-                const refreshToken = await json.sign({ userName }, process.env.REFRESH_PRIVATE_KEY, {
-                    expiresIn: '1d'
-                });
-                await updaterefreshToken(findUser.username,refreshToken);
-                res.status(200).cookie("refreshToken", refreshToken, {
-                    httpOnly: true,
-                    maxAge: 60 * 60 * 24 * 1000
-                });
-                res.json({ accessToken });
-            } else {
-                return errorGenerator(res, 401, "password is wrong.")
             }
-        } catch (err) {
-            errorGenerator(res, 500);
+
+            const accessToken = await generateToken(
+                { userName: foundUser[username] },
+                process.env.ACCESS_PRIVATE_KEY,
+                { expiresIn: '1h'}
+            );
+            const newRefreshToken = await generateToken(
+                { userName: foundUser[username] },
+                process.env.REFRESH_PRIVATE_KEY,
+                { expiresIn: '1d' }
+            );
+            
+            await updateUser(foundUser[username],[...refreshTokenArray,newRefreshToken]);
+
+            res.status(200).cookie("refreshToken", newRefreshToken, {
+                httpOnly: true,
+                maxAge: 60 * 60 * 24 * 1000
+            }); // secure: true
+            res.json({ accessToken });
+        } else {
+            return errorGenerator(res, 401, "password is wrong.")
         }
+    } catch (err) {
+        errorGenerator(res, 500);
     }
 }
