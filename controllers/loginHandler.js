@@ -31,17 +31,20 @@ exports.loginHandler = async function (req, res) {
         const isPasswordMatched = await bcrypt.compare(password, foundUser.password);
         if (isPasswordMatched) {
             let cookieRefreshToken = req?.cookies?.refreshToken;
-
             let refreshTokenArray = cookieRefreshToken ? foundUser.refreshToken.filter(rt => rt !== cookieRefreshToken) : foundUser.refreshToken;
 
             if(cookieRefreshToken) {
-                jwt.verify(cookieRefreshToken, process.env.REFRESH_PRIVATE_KEY, async (err, decoded) => {
-                    if(err || decoded.username !== foundUser.username) {
-                        foundUser.refreshTokenArray = [];
-                        await foundUser.save();
-                        return errorGenerator(res,403);
-                    }
-                });
+                const foundUserByRefreshToken = User.find({ refreshToken: cookieRefreshToken }).exec();
+
+                if(!foundUserByRefreshToken) {
+                    foundUser.refreshTokenArray = [];
+                    await foundUser.save();
+                    return errorGenerator(res,403);
+                }
+                res.clearCookie("refreshToken", {
+                    httpOnly: true,
+                    maxAge: 60 * 60 * 24 * 1000
+                }); // secure: true
             }
 
             const accessToken = await generateToken(
@@ -59,7 +62,8 @@ exports.loginHandler = async function (req, res) {
 
             res.status(200).cookie("refreshToken", newRefreshToken, {
                 httpOnly: true,
-                maxAge: 60 * 60 * 24 * 1000
+                maxAge: 60 * 60 * 24 * 1000,
+                
             }); // secure: true
             res.json({ accessToken });
         } else {

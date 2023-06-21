@@ -9,7 +9,7 @@ exports.refreshTokenHandler = async function (req, res) {
         return errorGenerator(res, 401);
     }
 
-    req.clearCookie("refreshToken", {
+    res.clearCookie("refreshToken", {
         httpOnly: true,
         maxAge: 60 * 60 * 24 * 1000
     }); // secure: true
