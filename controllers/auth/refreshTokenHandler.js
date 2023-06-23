@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
-const { errorGenerator } = require('../common/utility/errorGenerator');
-const { generateToken } = require("../common/controllerFunction");
+const { errorGenerator } = require('../../common/utility/errorGenerator');
+const { generateToken } = require("../../common/controllerFunction");
 
 exports.refreshTokenHandler = async function (req, res) {
     const userRefreshToken = req?.cookie?.refreshToken;

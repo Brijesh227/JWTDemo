@@ -1,2 +1,2 @@
-const { loginHandler } = require('../../../controllers/loginHandler');
+const { loginHandler } = require('../../../controllers/auth/loginHandler');
 exports.loginHandler = loginHandler;

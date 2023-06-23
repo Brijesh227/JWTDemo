@@ -1,4 +1,4 @@
-const allowedOrigins = require('../config/allowedOrigins');
+const allowedOrigins = require('../config/allowedOrigins.js');
 
 const credentials = (req, res, next) => {
     const origin = req.headers.origin;

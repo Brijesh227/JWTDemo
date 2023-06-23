@@ -1,26 +1,26 @@
-const Food = require('../model/foodSchema');
-const { errorGenerator } = require('../common/utility/errorGenerator');
+const User = require('../../model/userSchema');
+const { errorGenerator } = require('../../common/utility/errorGenerator');
 
-async function getFoodListByFoodType(req, res) {
+async function getUserByUserId(req, res) {
     try {
-        const { foodtype } = req.params;
-        if (!foodtype) {
-            return errorGenerator(res, 404);
+        const { userId } = req.body;
+        if (!userId) {
+            return errorGenerator(res, 400);
         }
-        const foodList = await Food.find({ category: foodtype }).exec();
-        res.send(200).json({ foodList });
+        const foundUser = await User.find({ username: userId }).exec();
+        return foundUser ? res.send(200).json({ foundUser }) : res.sendStatus(204);
     } catch (err) {
         console.log(err);
     }
 }
 
-async function createFoodItem(req, res) {
+async function createUserItem(req, res) {
     try {
         const { name, category, description, price } = req.body;
         if (!name || !category || !price || !description) {
             return errorGenerator(res, 400);
         }
-        const foodItem = await Food.create({
+        const foodItem = await User.create({
             name,
             category,
             description,
@@ -32,13 +32,13 @@ async function createFoodItem(req, res) {
     }
 }
 
-async function updateFoodItem(req, res) {
+async function updateUserItem(req, res) {
     try {
         const { name, category, description, price } = req.body;
         if (!name && !category && !price && !description) {
             return errorGenerator(res, 400);
         }
-        const foodItem = await Food.
+        const foodItem = await User.
         res.send(200).json(foodItem);
     } catch (err) {
         console.log(err);
@@ -46,7 +46,7 @@ async function updateFoodItem(req, res) {
 }
 
 module.exports = {
-    getFoodListByFoodType,
-    createFoodItem,
-    updateFoodItem
+    getUserByUserId,
+    createUserItem,
+    updateUserItem
 }

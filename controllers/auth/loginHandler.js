@@ -1,8 +1,8 @@
 const bcrypt = require('bcrypt');
-const User = require('../model/userSchema');
+const User = require('../../model/userSchema');
 require('dotenv').config();
-const { errorGenerator } = require('../common/utility/errorGenerator');
-const { generateToken } = require("../common/controllerFunction");
+const { errorGenerator } = require('../../common/utility/errorGenerator');
+const { generateToken } = require("../../common/controllerFunction");
 
 const updateUser = async (username,refreshTokenArray) => {
     try {

@@ -2,6 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const { connectDb } = require('./config/dbConnection');
+const cors = require('cors');
+const corsOptions = require('./config/corsOption');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const { logger } = require('./middleware/log');
@@ -11,6 +13,7 @@ const port = process.env.PORT || 3000;
 
 const app = express();
 connectDb();
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(logger);

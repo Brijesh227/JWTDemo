@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
-const User = require('../model/userSchema');
+const User = require('../../model/userSchema');
 require('dotenv').config();
-const { errorGenerator } = require('../common/utility/errorGenerator');
+const { errorGenerator } = require('../../common/utility/errorGenerator');
 
 exports.registerHandler = async function (req, res) {
     const { userName, password } = req.body;

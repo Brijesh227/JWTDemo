@@ -1,6 +1,6 @@
 const express = require('express');
 const userRoleList = require('../../../config/role');
-const foodController = require('../../../controllers/foodController');
+const foodController = require('../../../controllers/food/foodController');
 const { verifyJwtToken } = require('../../../middleware/verifyJwtToken');
 const { verifyRole } = require('../../../middleware/verifyRole');
 const router = express.Router();
